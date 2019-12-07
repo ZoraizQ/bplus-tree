@@ -18,7 +18,7 @@ class Node {
 	bool isLeaf; // Is true when node is leaf. Otherwise false 
 public: 
 	Node(); // Constructor 
-
+	int findKeySlot(int k);
 	// Make B+Tree friend of this so that we can access private members of this class in BTree functions 
 	friend class BPlusTree;
 }; 
