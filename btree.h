@@ -17,6 +17,8 @@ class Node {
 	int size;	 // Current number of keys 
 	bool isLeaf; // Is true when node is leaf. Otherwise false 
 	Node* parent;
+	Node* leftsib;
+	Node* rightsib;
 public: 
 	Node(); // Constructor
 	bool isFull();
@@ -25,6 +27,8 @@ public:
 	bool addKey(int k);
 	void deleteKey(int k);
 	int split();
+	bool borrow();
+	bool borrowChildren();
 	
 	// Make B+Tree friend of this so that we can access private members of this class in BTree functions 
 	friend class BPlusTree;

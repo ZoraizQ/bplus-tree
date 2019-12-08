@@ -55,6 +55,7 @@ void Node::printData(){
    for (int i = 0; i < DEG; i++){
       cout << key[i] << " ";
    }
+   cout << "Left Sibling " << leftsib->key[0] << " Right Sibling " << rightsib->key[0] << endl; 
    cout << endl;
 }
 
@@ -113,6 +114,23 @@ void Node::deleteKey(int k){ //assumes it is present
    }
 }
 
+bool Node::borrow(){
+   if (leftsib != NULL && leftsib->size > DEG/2){ //can borrow from left
+      //get maximum from left
+      int leftMax = leftsib->key[leftsib->size-1]; 
+      leftsib->deleteKey(leftMax);
+      addKey(leftMax);
+      return true;
+   } 
+   else if (rightsib != NULL && rightsib->size > DEG/2){
+      int rightMin = rightsib->key[0];
+      rightsib->deleteKey(rightMin);
+      addKey(rightMin);
+      return true;
+   }
+   return false;
+}
+
 int Node::split(){
    Node* left = new Node();
    Node* right = new Node();
@@ -120,6 +138,12 @@ int Node::split(){
       left->isLeaf = true;
       right->isLeaf = true;
    }
+   left->leftsib = leftsib;//old left sibling points to new left
+   left->rightsib = right; //since these 2 were made
+   right->leftsib = left;
+   right->rightsib = rightsib; //old right sibling points to old right
+   left->parent = this;
+   right->parent = this;
    int mid = (DEG+1)/2;
    int midKey = key[mid];
 
@@ -195,6 +219,8 @@ void BPlusTree::insert(int k){
       root = new Node();
       root->key[0] = k;
       root->children[0] = NULL;
+      root->leftsib = NULL;
+      root->rightsib = NULL;
       root->size++;
       root->isLeaf = true;
    }
@@ -244,7 +270,7 @@ Node* BPlusTree::search(int k){
 			bool found = false;
          for(int i = 0; i < curr->size; i++){ //traverse through internal node's children
             if(k < curr->key[i]){ //left child of key i may have k 
-					curr = curr->children[i];
+               curr = curr->children[i];
                found = true;
 					break;
 				}
@@ -288,8 +314,24 @@ void BPlusTree::remove(int k){
          }
       }
    }
-   else{
+   else{ //on leaf node
+      // cout << "on a leaf node " << endl;
       knode->deleteKey(k);
+      if(knode->size < DEG/2){// if L drops below the half-full critera
+         // cout << "Fallen below minimum" << endl;
+         bool borrowed = knode->borrow(); //ask left and right
+         if (!borrowed){
+            //merge with left
+            for (int i = 0; i < knode->leftsib->size; i++){
+               knode->leftsib->addKey(knode->key[i]);
+            }
+            Node* parentk = knode->parent;
+            delete knode;
+            for (int  j = 0; j < parentk->size; j++){
+               parentk->children[j] = parentk->children[j+1];
+            }
+         }
+      }
       Node* curr = knode->parent;
       while(curr != NULL){
          if (curr->size == 1){ //deleting will destroy the node, special case
