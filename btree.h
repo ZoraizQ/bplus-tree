@@ -16,9 +16,16 @@ class Node {
 	Node **children; // An array of child pointers
 	int size;	 // Current number of keys 
 	bool isLeaf; // Is true when node is leaf. Otherwise false 
+	Node* parent;
 public: 
-	Node(); // Constructor 
-	int findKeySlot(int k);
+	Node(); // Constructor
+	bool isFull();
+	void printData();
+	pair<Node*,int> getNextChild(int k);
+	bool addKey(int k);
+	void deleteKey(int k);
+	int split();
+	
 	// Make B+Tree friend of this so that we can access private members of this class in BTree functions 
 	friend class BPlusTree;
 }; 
@@ -46,6 +53,8 @@ class BPlusTree{
 
 		// function to delete node containing particular key
 		void remove(int k); 
+
+		void mergeWithParent(Node* curr, int index);
 };
 
 #endif
